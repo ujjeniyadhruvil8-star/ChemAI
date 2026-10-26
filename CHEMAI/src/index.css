@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .grid-cols-18 {
+    grid-template-columns: repeat(18, minmax(0, 1fr));
+  }
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-18 {
+      grid-template-columns: repeat(18, minmax(0, 1fr)) !important;
+    }
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes bubbleUp {
+  0% {
+    transform: translateY(100%) scale(0.3);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-140%) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes orbit1 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orbit2 {
+  0% { transform: rotate(45deg) rotateZ(0deg); }
+  100% { transform: rotate(45deg) rotateZ(360deg); }
+}
+
+@keyframes orbit3 {
+  0% { transform: rotate(-45deg) rotateZ(0deg); }
+  100% { transform: rotate(-45deg) rotateZ(360deg); }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.animate-bubble-1 {
+  animation: bubbleUp 2.4s ease-in infinite;
+}
+
+.animate-bubble-2 {
+  animation: bubbleUp 1.9s ease-in infinite 0.5s;
+}
+
+.animate-bubble-3 {
+  animation: bubbleUp 2.8s ease-in infinite 1s;
+}
+
+.animate-bubble-4 {
+  animation: bubbleUp 2.1s ease-in infinite 1.5s;
+}
+
+.animate-orbit-1 {
+  animation: orbit1 8s linear infinite;
+}
+
+.animate-orbit-2 {
+  animation: orbit2 10s linear infinite;
+}
+
+.animate-orbit-3 {
+  animation: orbit3 12s linear infinite;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.7);
+}
