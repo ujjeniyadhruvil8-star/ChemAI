@@ -14,7 +14,11 @@ import {
   Layers, 
   Thermometer, 
   BookOpen, 
-  RotateCcw 
+  RotateCcw,
+  Sparkles,
+  HeartPulse,
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
 import { PERIODIC_ELEMENTS, ELECTRON_SHELLS } from './periodicData';
 
@@ -962,7 +966,7 @@ const ChemistryApp = () => {
                   </div>
                 </div>
 
-                {/* Grid of Results */}
+                {/* 1. Reactants, Synthesized Products & Properties */}
                 <div className="grid md:grid-cols-2 gap-4">
                   {/* Reactants */}
                   <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
@@ -981,11 +985,28 @@ const ChemistryApp = () => {
                     <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-2 font-bold">
                       Synthesized Products:
                     </span>
-                    <ul className="list-disc list-inside space-y-1 font-mono text-white text-base">
+                    <ul className="list-disc list-inside space-y-1 font-mono text-white text-base mb-2">
                       {result.products?.map((p, i) => (
                         <li key={i}>{p}</li>
                       ))}
                     </ul>
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[#c28863]/30 text-xs font-mono">
+                      {result.product_color && (
+                        <span className="px-2 py-0.5 bg-[#171310] border border-[#c28863]/40 rounded text-[#ffd9bf]">
+                          Color: <strong className="text-white">{result.product_color}</strong>
+                        </span>
+                      )}
+                      {result.product_phase && (
+                        <span className="px-2 py-0.5 bg-[#171310] border border-[#c28863]/40 rounded text-[#ffd9bf]">
+                          Phase: <strong className="text-white">{result.product_phase}</strong>
+                        </span>
+                      )}
+                      {result.purity && (
+                        <span className="px-2 py-0.5 bg-[#171310] border border-[#c28863]/40 rounded text-[#ffd9bf]">
+                          Purity: <strong className="text-white">{result.purity}</strong>
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Reaction Type */}
@@ -1005,6 +1026,113 @@ const ChemistryApp = () => {
                     <p className="text-lg text-[#ffd9bf] font-mono">{result.energy_change}</p>
                   </div>
                 </div>
+
+                {/* 2. Reaction Operational Kinetics, Temperature & Catalyst */}
+                <div className="mt-4 p-4 bg-[#0a0908] border border-[#c28863] rounded-lg shadow-inner">
+                  <span className="text-xs font-cinzel uppercase tracking-widest text-[#c28863] block mb-3 font-bold flex items-center gap-1.5">
+                    <Activity size={15} />
+                    Reaction Kinetics, Temperature & Catalytic Specification:
+                  </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                      <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                        <Thermometer size={14} className="text-[#ffd9bf]" />
+                        Required Temperature:
+                      </span>
+                      <p className="text-sm font-mono text-white leading-relaxed">
+                        {result.required_temperature || result.temperature || 'Ambient (298 K / 25°C)'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                      <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                        <Zap size={14} className="text-[#ffd9bf]" />
+                        Kinetic / Activation Energy:
+                      </span>
+                      <p className="text-sm font-mono text-white leading-relaxed">
+                        {result.kinetic_energy || 'Standard thermal collision dynamics'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                      <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                        <Sparkles size={14} className="text-[#ffd9bf]" />
+                        Catalyst Requirement:
+                      </span>
+                      <p className="text-sm font-mono text-white leading-relaxed">
+                        {result.catalyst || 'None required'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. User-Selected Reactant Elements: Chemical & Physical Properties Dossier */}
+                {result.chosen_elements && result.chosen_elements.length > 0 && (
+                  <div className="mt-4 p-4 bg-[#0a0908] border border-[#c28863] rounded-lg">
+                    <span className="text-xs font-cinzel uppercase tracking-widest text-[#c28863] block mb-3 font-bold flex items-center gap-1.5">
+                      <Atom size={16} />
+                      User-Selected Elements · Chemical & Physical Properties:
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {result.chosen_elements.map((el, i) => (
+                        <div key={i} className="p-3.5 bg-[#0e0d0b] border border-[#c28863]/60 rounded flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between border-b border-[#c28863]/30 pb-2 mb-2">
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-mono font-bold text-[#ffd9bf]">{el.symbol}</span>
+                                <span className="text-base font-cinzel font-bold text-white">{el.name}</span>
+                                <span className="text-xs font-mono text-[#7a6b61]">#{el.number}</span>
+                              </div>
+                              <span className="text-xs font-cinzel uppercase px-2 py-0.5 bg-[#171310] border border-[#c28863]/40 rounded text-[#c28863]">
+                                {el.category}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1.5 mb-2.5 text-xs font-mono">
+                              <span className="px-2 py-0.5 bg-[#14110e] border border-[#c28863]/30 rounded text-[#ffd9bf]">
+                                Color: <strong className="text-white">{el.color}</strong>
+                              </span>
+                              <span className="px-2 py-0.5 bg-[#14110e] border border-[#c28863]/30 rounded text-[#ffd9bf]">
+                                Phase: <strong className="text-white">{el.phase}</strong>
+                              </span>
+                              {el.density && (
+                                <span className="px-2 py-0.5 bg-[#14110e] border border-[#c28863]/30 rounded text-[#ffd9bf]">
+                                  Density: <strong className="text-white">{el.density}</strong>
+                                </span>
+                              )}
+                              {el.electronegativity && (
+                                <span className="px-2 py-0.5 bg-[#14110e] border border-[#c28863]/30 rounded text-[#ffd9bf]">
+                                  EN: <strong className="text-white">{el.electronegativity}</strong>
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="space-y-1.5 text-xs leading-relaxed">
+                              {el.physical_properties && (
+                                <p className="text-[#dfd3ca]">
+                                  <strong className="text-[#c28863] font-cinzel uppercase tracking-wider">Physical: </strong>
+                                  {el.physical_properties}
+                                </p>
+                              )}
+                              {el.chemical_properties && (
+                                <p className="text-[#dfd3ca]">
+                                  <strong className="text-[#c28863] font-cinzel uppercase tracking-wider">Chemical: </strong>
+                                  {el.chemical_properties}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-2.5 pt-2 border-t border-[#c28863]/20 flex justify-between text-[11px] font-mono text-[#7a6b61]">
+                            <span>MP: {el.melting_point}</span>
+                            <span>BP: {el.boiling_point}</span>
+                            <span>Ox: {el.oxidation_states}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Molar Masses */}
                 <div className="mt-4 p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
@@ -1036,20 +1164,45 @@ const ChemistryApp = () => {
                   </div>
                 </div>
 
-                {/* Safety & Real-World */}
+                {/* Real-World Applications */}
+                <div className="mt-4 p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                  <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold">
+                    Industrial & Scientific Real-World Applications of Product:
+                  </span>
+                  <p className="text-sm text-[#dfd3ca] leading-relaxed">{result.real_world_use}</p>
+                </div>
+
+                {/* Safety, Hazards, Precautions & First Aid */}
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
+                  {/* Hazards */}
                   <div className="p-4 bg-[#1a0f0d] border border-[#a64338]/80 rounded">
                     <span className="text-xs font-cinzel uppercase text-[#f8a89d] tracking-wider mb-1 font-bold flex items-center gap-1.5">
                       <AlertTriangle size={15} />
-                      Laboratory Safety Protocol:
+                      Chemical Hazards:
                     </span>
-                    <p className="text-sm text-[#ffd2cc] leading-relaxed">{result.safety}</p>
+                    <p className="text-sm text-[#ffd2cc] leading-relaxed">{result.hazards || result.safety}</p>
                   </div>
+
+                  {/* Precautions */}
                   <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
-                    <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold">
-                      Industrial & Scientific Applications:
+                    <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider mb-1 font-bold flex items-center gap-1.5">
+                      <ShieldCheck size={15} />
+                      Safe Handling Precautions & PPE:
                     </span>
-                    <p className="text-sm text-[#dfd3ca] leading-relaxed">{result.real_world_use}</p>
+                    <p className="text-sm text-[#dfd3ca] leading-relaxed">
+                      {result.precautions || 'Operate strictly inside certified fume hood. Wear chemical-resistant gloves, splash goggles, and lab coat.'}
+                    </p>
+                  </div>
+
+                  {/* First Aid */}
+                  <div className="p-4 bg-[#1a0f0d] border border-[#a64338]/80 rounded md:col-span-2">
+                    <span className="text-xs font-cinzel uppercase text-[#f8a89d] tracking-wider mb-1 font-bold flex items-center gap-1.5">
+                      <HeartPulse size={15} />
+                      Emergency First Aid Protocol:
+                    </span>
+                    <p className="text-sm text-[#ffd2cc] leading-relaxed">
+                      {result.first_aid || 'Inhalation: Move exposed person to fresh air. Skin/Eye Contact: Immediately flush with copious saline/water for 15+ minutes. Ingestion: Rinse mouth; do not induce vomiting without physician.'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1094,18 +1247,60 @@ const ChemistryApp = () => {
                   </span>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
-                    <span className="text-xs font-cinzel uppercase text-[#c28863] block mb-1">Molar Mass:</span>
-                    <p className="text-2xl text-white font-mono font-bold">{result.molar_mass} g/mol</p>
+                {/* Top Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  <div className="p-3 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                    <span className="text-[11px] font-cinzel uppercase text-[#c28863] block mb-1">Molar Mass:</span>
+                    <p className="text-xl text-white font-mono font-bold">{result.molar_mass} g/mol</p>
                   </div>
-                  <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
-                    <span className="text-xs font-cinzel uppercase text-[#c28863] block mb-1">Standard Phase:</span>
-                    <p className="text-2xl text-white font-serif capitalize">{result.phase}</p>
+                  <div className="p-3 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                    <span className="text-[11px] font-cinzel uppercase text-[#c28863] block mb-1">Standard Phase:</span>
+                    <p className="text-xl text-white font-serif capitalize">{result.phase}</p>
                   </div>
-                  <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
-                    <span className="text-xs font-cinzel uppercase text-[#c28863] block mb-1">Chemical Category:</span>
-                    <p className="text-lg text-white font-serif">{result.category}</p>
+                  <div className="p-3 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                    <span className="text-[11px] font-cinzel uppercase text-[#c28863] block mb-1">Color:</span>
+                    <p className="text-sm text-[#ffd9bf] font-mono leading-tight">{result.color || 'Colorless / Off-white'}</p>
+                  </div>
+                  <div className="p-3 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                    <span className="text-[11px] font-cinzel uppercase text-[#c28863] block mb-1">Purity Grade:</span>
+                    <p className="text-sm text-[#ffd9bf] font-mono leading-tight">{result.purity || '≥ 99.0% Reagent'}</p>
+                  </div>
+                  <div className="p-3 bg-[#0e0d0b] border border-[#c28863]/50 rounded col-span-2 sm:col-span-1">
+                    <span className="text-[11px] font-cinzel uppercase text-[#c28863] block mb-1">Category:</span>
+                    <p className="text-sm text-white font-serif leading-tight">{result.category}</p>
+                  </div>
+                </div>
+
+                {/* Kinetics, Temperature & Catalyst */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                    <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                      <Thermometer size={14} className="text-[#ffd9bf]" />
+                      Thermal Stability / Temp:
+                    </span>
+                    <p className="text-xs font-mono text-white leading-relaxed">
+                      {result.required_temperature || 'Standard laboratory conditions (298 K)'}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                    <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                      <Zap size={14} className="text-[#ffd9bf]" />
+                      Kinetic / Bond Energy:
+                    </span>
+                    <p className="text-xs font-mono text-white leading-relaxed">
+                      {result.kinetic_energy || 'Standard thermodynamic covalent/ionic bond enthalpy'}
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-[#110e0c] border border-[#c28863]/40 rounded">
+                    <span className="text-xs font-cinzel uppercase text-[#c28863] tracking-wider block mb-1 font-bold flex items-center gap-1">
+                      <Sparkles size={14} className="text-[#ffd9bf]" />
+                      Catalyst Specification:
+                    </span>
+                    <p className="text-xs font-mono text-white leading-relaxed">
+                      {result.catalyst || 'None required under neutral ambient conditions'}
+                    </p>
                   </div>
                 </div>
 
@@ -1124,6 +1319,33 @@ const ChemistryApp = () => {
                   <span className="text-xs font-cinzel uppercase text-[#c28863] block mb-1">Physical & Chemical Properties:</span>
                   <p className="text-sm text-[#dfd3ca] leading-relaxed">{result.properties}</p>
                 </div>
+
+                {/* Constituent Elements Dossier */}
+                {result.constituent_elements && result.constituent_elements.length > 0 && (
+                  <div className="p-4 bg-[#0a0908] border border-[#c28863] rounded-lg">
+                    <span className="text-xs font-cinzel uppercase tracking-widest text-[#c28863] block mb-3 font-bold flex items-center gap-1.5">
+                      <Atom size={16} />
+                      Constituent Elements · Chemical & Physical Properties:
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {result.constituent_elements.map((el, i) => (
+                        <div key={i} className="p-3 bg-[#0e0d0b] border border-[#c28863]/60 rounded text-xs">
+                          <div className="flex items-center justify-between border-b border-[#c28863]/30 pb-1.5 mb-2">
+                            <span className="font-mono font-bold text-lg text-[#ffd9bf]">{el.symbol} - {el.name}</span>
+                            <span className="text-[11px] font-cinzel text-[#c28863] uppercase">#{el.number} · {el.category}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mb-2 font-mono text-[11px]">
+                            <span className="px-1.5 py-0.5 bg-[#171310] border border-[#c28863]/30 rounded text-[#ffd9bf]">Color: {el.color}</span>
+                            <span className="px-1.5 py-0.5 bg-[#171310] border border-[#c28863]/30 rounded text-[#ffd9bf]">Phase: {el.phase}</span>
+                            {el.density && <span className="px-1.5 py-0.5 bg-[#171310] border border-[#c28863]/30 rounded text-[#ffd9bf]">Density: {el.density}</span>}
+                          </div>
+                          <p className="text-[#dfd3ca] mb-1"><strong className="text-[#c28863]">Physical:</strong> {el.physical_properties}</p>
+                          <p className="text-[#dfd3ca]"><strong className="text-[#c28863]">Chemical:</strong> {el.chemical_properties}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
@@ -1144,15 +1366,34 @@ const ChemistryApp = () => {
                   </div>
                 </div>
 
+                {/* Safety, Hazards, Precautions & First Aid */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="p-4 bg-[#1a0f0d] border border-[#a64338]/80 rounded">
                     <span className="text-xs font-cinzel uppercase text-[#f8a89d] mb-1 font-bold flex items-center gap-1.5">
                       <AlertTriangle size={15} />
-                      Safety Precautions:
+                      Chemical Hazards:
                     </span>
-                    <p className="text-sm text-[#ffd2cc] leading-relaxed">{result.safety_precautions}</p>
+                    <p className="text-sm text-[#ffd2cc] leading-relaxed">{result.hazards || result.safety_precautions}</p>
                   </div>
                   <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded">
+                    <span className="text-xs font-cinzel uppercase text-[#c28863] mb-1 font-bold flex items-center gap-1.5">
+                      <ShieldCheck size={15} />
+                      Safe Handling Precautions & PPE:
+                    </span>
+                    <p className="text-sm text-[#dfd3ca] leading-relaxed">
+                      {result.precautions || result.safety_precautions || 'Wear chemical-resistant gloves, splash goggles, and work in certified fume hood.'}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-[#1a0f0d] border border-[#a64338]/80 rounded md:col-span-2">
+                    <span className="text-xs font-cinzel uppercase text-[#f8a89d] mb-1 font-bold flex items-center gap-1.5">
+                      <HeartPulse size={15} />
+                      Emergency First Aid Protocol:
+                    </span>
+                    <p className="text-sm text-[#ffd2cc] leading-relaxed">
+                      {result.first_aid || 'Inhalation: Move to fresh air. Skin/Eyes: Rinse thoroughly with running water for 15+ minutes. Ingestion: Rinse mouth; seek immediate medical attention.'}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-[#0e0d0b] border border-[#c28863]/50 rounded md:col-span-2">
                     <span className="text-xs font-cinzel uppercase text-[#c28863] block mb-1 font-bold">Real-Life Uses:</span>
                     <ul className="list-disc list-inside space-y-1 text-sm text-[#dfd3ca]">
                       {result.real_life_uses?.map((u, i) => (

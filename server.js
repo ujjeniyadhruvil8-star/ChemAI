@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import 'dotenv/config';
 import express from 'express';
+import { extractElementsProfiles, getElementFullProfile } from './src/elementProfiles.js';
 
 const app = express();
 const port = Number(process.env.API_PORT) || 3001;
@@ -143,10 +144,19 @@ export const TEXTBOOK_REACTIONS = [
     reaction_type: 'Combination / Synthesis reaction (also a redox reaction)',
     energy_change: 'Exothermic; ΔH ≈ -72.8 kJ/mol of HBr formed (-145.6 kJ/mol overall)',
     molar_masses: { H2: 2.016, Br2: 159.808, HBr: 80.912 },
-    reaction_conditions: 'Requires initiation by heat, light (UV), or a radical initiator; proceeds via a chain mechanism at room temperature when initiated',
-    observations: "Reddish-brown color of Br2 vapor fades as colorless HBr gas forms; reaction may produce visible fumes; slight misting or fuming observable if moisture is present due to HBr's high solubility in water forming hydrobromic acid",
+    reaction_conditions: 'Requires initiation by heat, light (UV irradiation), or a radical initiator; proceeds via a chain mechanism',
+    required_temperature: '200 °C - 300 °C (473 K - 573 K) thermal initiation, or room temperature (298 K) under UV irradiation',
+    kinetic_energy: 'Activation Energy Ea ≈ 167 kJ/mol; proceeds via free radical chain mechanism (Br• radical propagation & high collision frequency)',
+    catalyst: 'Photochemical initiation (UV light hν) or Platinum (Pt) / Palladium (Pd) catalyst gauze; uncatalyzed reaction is slow in darkness',
+    product_color: 'Colorless fuming gas (clear, colorless aqueous solution as hydrobromic acid)',
+    product_phase: 'Gas (aqueous solution: liquid)',
+    purity: '99.5% - 99.8% ACS Electronic Grade / Anhydrous Synthesis Grade',
+    hazards: 'GHS Category 1 Corrosive gas: Causes severe skin burns and serious eye damage. Fatal if inhaled in high concentrations. Strongly acidic fumes irritate respiratory tract.',
+    first_aid: 'Inhalation: Move victim to fresh air immediately; administer humidified oxygen if breathing is labored. Skin Contact: Immediately flush with water for ≥15 min while removing contaminated attire. Eye Contact: Flush cautiously with sterile saline or water for 20 min holding eyelids wide open; seek urgent ophthalmic care. Ingestion: Rinse mouth with cold water; DO NOT induce vomiting; seek emergency medical care.',
+    precautions: 'Operate strictly inside a certified high-flow fume hood. Wear chemical-resistant butyl/nitrile gloves, splash goggles, and full-face shield. Keep emergency calcium gluconate and eyewash immediately accessible.',
+    observations: "Reddish-brown color of Br2 vapor fades as colorless HBr gas forms; reaction produces dense visible fumes when moist air is present due to HBr's high solubility in water",
     safety: 'Br2 is a toxic, corrosive liquid/vapor — use fume hood and PPE. HBr produced is a toxic, strongly acidic gas that irritates respiratory tract and eyes. Both are severe health hazards; handle with extreme caution in controlled laboratory settings only.',
-    real_world_use: 'HBr is widely used in organic synthesis (hydrobromination of alkenes), pharmaceutical manufacturing, semiconductor etching, and production of inorganic bromides used in flame retardants and photography.'
+    real_world_use: 'HBr is widely used in organic synthesis (hydrobromination of alkenes), pharmaceutical manufacturing, semiconductor plasma etching, and production of inorganic bromides used in flame retardants and photography.'
   },
   {
     keys: ['H', 'O'],
@@ -157,6 +167,15 @@ export const TEXTBOOK_REACTIONS = [
     energy_change: 'Highly Exothermic; ΔH = -285.8 kJ/mol H2O (-571.6 kJ/mol overall)',
     molar_masses: { H2: 2.016, O2: 31.998, H2O: 18.015 },
     reaction_conditions: 'Requires spark, flame ignition, or platinum group catalyst; reaction is self-sustaining and propagates rapidly through gaseous mixture',
+    required_temperature: 'Ignition temperature ≥ 570 °C (843 K) or ambient (298 K) in presence of active platinum catalyst',
+    kinetic_energy: 'Activation Energy Ea ≈ 160 kJ/mol; branched-chain radical propagation (H• + O2 -> •OH + •O•) with explosive velocity',
+    catalyst: 'Platinum (Pt) or Palladium (Pd) sponge / gauze enables room-temperature flameless catalytic recombination',
+    product_color: 'Clear, colorless transparent liquid (nearly white / colorless vapor mist upon condensation)',
+    product_phase: 'Liquid (condenses from steam vapor at < 100 °C)',
+    purity: '100% Deionized / Type I Ultrapure Reagent Water (resistivity > 18.2 MΩ·cm)',
+    hazards: 'Mixtures of H2 and O2 between 4% and 75% volume are extremely explosive. Hot steam produces severe thermal scalds.',
+    first_aid: 'Thermal Burns: Submerge affected skin in clean cool water for 15 minutes. Eye/Skin irritation: Rinse with clean water. Keep victim calm.',
+    precautions: 'Ensure spark-free electrical equipment and anti-static grounding when handling H2. Conduct combustion experiments behind certified blast shields.',
     observations: 'Rapid combustion with nearly invisible faint pale-blue flame, sudden pressure spike, and immediate condensation of fine water vapor droplets on cooler surfaces',
     safety: 'Mixtures of H2 and O2 between 4% and 75% volume are extremely explosive. Perform behind blast shields with proper grounding to avoid static ignition.',
     real_world_use: 'Rocket propellant engines (cryogenic Space Shuttle Main Engines, SLS core stage), clean hydrogen fuel cells for zero-emission transport, and oxy-hydrogen welding torches.'
@@ -170,6 +189,15 @@ export const TEXTBOOK_REACTIONS = [
     energy_change: 'Extremely Exothermic; ΔH = -411.12 kJ/mol of NaCl formed (-822.2 kJ/mol overall)',
     molar_masses: { Na: 22.990, Cl2: 70.906, NaCl: 58.443 },
     reaction_conditions: 'Heat to melt sodium or introduce a small droplet of water as catalyst inside a chlorine gas atmosphere',
+    required_temperature: 'Slight warming to ~100 °C (373 K) to melt sodium or ambient (298 K) with trace moisture drop initiation',
+    kinetic_energy: 'Activation Energy Ea ≈ 25 kJ/mol; harpoon mechanism electron transfer creates instant Coulombic lattice attraction',
+    catalyst: 'Trace moisture (H2O vapor droplet) acts as catalytic polar interface; completely dry reagents react sluggishly',
+    product_color: 'Bright white crystalline solid (cubic lattice)',
+    product_phase: 'Solid (crystalline face-centered cubic ionic lattice)',
+    purity: '99.9% Analytical Reagent (AR) Grade / USP Pharmaceutical Grade',
+    hazards: 'Metallic sodium reacts violently with atmospheric moisture; chlorine gas is a lethal pulmonary irritant. Highly hazardous reaction conducted strictly under fume extraction.',
+    first_aid: 'Eye Contact: Rinse cautiously with water for several minutes. Skin: Rinse with clean water. Ingestion: Drink plenty of fresh water if excessive amounts were swallowed.',
+    precautions: 'Conduct in chemical fume hood with dry inert atmosphere (Argon/N2). Wear thermal-resistant gloves and blast goggles. Keep Class D fire extinguisher nearby.',
     observations: 'Intense, blinding yellow emission flame, crackling sounds, and dense white billowing smoke of sodium chloride micro-crystals settling on vessel walls',
     safety: 'Metallic sodium reacts violently with atmospheric moisture; chlorine gas is a lethal pulmonary irritant. Highly hazardous reaction strictly conducted under high-efficiency fume extraction.',
     real_world_use: 'Demonstration of ionic lattice formation, industrial synthesis of ultra-pure analytical grade table salt, thermodynamic energy transfer studies.'
@@ -183,6 +211,15 @@ export const TEXTBOOK_REACTIONS = [
     energy_change: 'Exothermic; ΔH = -890.7 kJ/mol of methane consumed',
     molar_masses: { CH4: 16.043, O2: 31.998, CO2: 44.010, H2O: 18.015 },
     reaction_conditions: 'Ignition spark at >600°C with stoichiometric or surplus oxygen ratio to avoid partial carbon monoxide formation',
+    required_temperature: 'Ignition temperature 600 °C (873 K) with spark, or 350 °C with supported palladium catalyst',
+    kinetic_energy: 'Activation Energy Ea ≈ 125 kJ/mol; multi-step radical chain branching via •OH and •H intermediaries',
+    catalyst: 'Noble metal catalysts (Pd/Al2O3 or Pt) enable low-temperature flameless catalytic combustion at 300-350 °C',
+    product_color: 'Colorless gas (CO2) and clear colorless liquid droplets (condensed H2O)',
+    product_phase: 'Gas (CO2) + Liquid (H2O)',
+    purity: '99.99% Food & Industrial Beverage Grade CO2 after gas condensation/scrubbing',
+    hazards: 'Flammable gas with explosion limits between 5% and 15% in air. Inadequate air supply leads to deadly toxic carbon monoxide (CO) emission. CO2 is an asphyxiant.',
+    first_aid: 'Inhalation (CO2 Asphyxiation): Remove person to fresh air at once. Perform artificial respiration or administer oxygen if breathing has stopped. Call emergency services.',
+    precautions: 'Ensure adequate room ventilation or fume extraction to prevent CO2 accumulation and asphyxiation. Check gas connections with leak detection fluid.',
     observations: 'Steady laminar blue flame with complete oxygenation, copious heat evolution, and release of odorless steam and carbon dioxide',
     safety: 'Flammable gas with explosion limits between 5% and 15% in air. Inadequate air supply leads to deadly toxic carbon monoxide (CO) emission.',
     real_world_use: 'Primary energy source for municipal heating, domestic cooking, gas turbine electrical power generation, and synthesis gas reforming.'
@@ -196,6 +233,15 @@ export const TEXTBOOK_REACTIONS = [
     energy_change: 'Exothermic; ΔH = -824.2 kJ/mol Fe2O3 (-1648.4 kJ/mol overall)',
     molar_masses: { Fe: 55.845, O2: 31.998, Fe2O3: 159.688 },
     reaction_conditions: 'Slow at ambient humidity via electrochemical corrosion cells, or incandescent combustion when steel wool is ignited in pure O2',
+    required_temperature: 'Ambient temperature (298 K) with moisture, or >800 °C incandescent thermal combustion',
+    kinetic_energy: 'Activation Energy Ea ≈ 65 kJ/mol; solid-state diffusion barrier of oxygen through developing oxide lattice layer',
+    catalyst: 'Aqueous electrolyte (NaCl salt solution) accelerates electrochemical redox galvanic corrosion cells',
+    product_color: 'Deep reddish-brown to dark crimson powder/rust',
+    product_phase: 'Solid (amorphous to crystalline metal oxide)',
+    purity: '98.5% - 99.5% Pigment & Magnetic Recording Grade hematite',
+    hazards: 'Incandescent molten iron particles present severe burn and fire hazards. Inhalation of fine ferric oxide dust causes benign siderosis.',
+    first_aid: 'Inhalation: Move to fresh air. Eye Contact: Flush thoroughly with eye wash solution to remove particulate matter. Do not rub eyes.',
+    precautions: 'Use particulate respirator (N95 or HEPA) when handling fine oxide powders. Wear safety glasses with side shields.',
     observations: 'Bright showering golden sparks during rapid burning, forming brittle reddish-brown iron(III) oxide (rust/hematite)',
     safety: 'Incandescent molten iron particles present severe burn and fire hazards. Rust scales cause structural failure in iron infrastructure.',
     real_world_use: 'Air-activated exothermic hand warmers, corrosion engineering, manufacturing of magnetic recording media, and natural ochre pigments.'
@@ -209,6 +255,15 @@ export const TEXTBOOK_REACTIONS = [
     energy_change: 'Exothermic; ΔH = -57.3 kJ/mol of water formed',
     molar_masses: { HCl: 36.458, NaOH: 39.997, NaCl: 58.443, H2O: 18.015 },
     reaction_conditions: 'Aqueous solution at ambient temperature (20-25°C); spontaneous upon contact',
+    required_temperature: 'Standard ambient temperature (293 K - 298 K / 20 °C - 25 °C); spontaneous and exothermic',
+    kinetic_energy: 'Activation Energy Ea ≈ 5 - 10 kJ/mol (diffusion-controlled ultra-fast proton transfer: H3O+ + OH- -> 2 H2O)',
+    catalyst: 'None required; spontaneous diffusion-controlled neutralization driven by rapid aqueous proton hopping (Grotthuss mechanism)',
+    product_color: 'Clear, colorless homogeneous aqueous salt solution (white cubic crystals upon evaporation)',
+    product_phase: 'Liquid (aqueous solution / solid residue upon evaporation)',
+    purity: '99.5% Pure isotonic or analytical salt brine solution',
+    hazards: 'Concentrated reagents cause severe chemical burns to skin and eyes. Exothermic dilution generates local boiling if mixed too quickly.',
+    first_aid: 'Chemical splashes from HCl/NaOH: Immediately drench affected area with copious running water for at least 20 minutes under emergency safety shower or eyewash. Seek medical attention immediately.',
+    precautions: 'Add acid slowly to base or water with continuous stirring (never add water to concentrated acid). Wear heavy neoprene gloves, splash apron, and face shield.',
     observations: 'Temperature rises detectably; solution remains clear and colorless; indicator dye changes color (phenolphthalein shifts from pink to clear at pH 7)',
     safety: 'Concentrated reagents cause severe chemical burns to skin and eyes. Wear goggles, gloves, and lab coat; exothermic dilution generates local boiling if mixed too quickly.',
     real_world_use: 'Industrial wastewater neutralization, quantitative analytical titrations, production of food-grade brine, and chemical processing.'
@@ -222,7 +277,12 @@ export const KNOWN_COMPOUNDS = {
     structure: 'Linear diatomic molecule with polar covalent bond distance of 141.4 pm',
     bonding: 'Strong polar covalent bond with permanent dipole moment (μ = 0.82 D)',
     molar_mass: 80.912,
-    phase: 'gas (aqueous solution is hydrobromic acid)',
+    color: 'Colorless fuming gas / Clear colorless aqueous liquid',
+    phase: 'Gas (aqueous solution is hydrobromic acid)',
+    purity: '≥ 99.8% Anhydrous Electronic Grade; 48% ACS Reagent aqueous azeotrope',
+    required_temperature: 'Stable anhydrous gas at 25 °C (298 K); boiling point -66.8 °C',
+    kinetic_energy: 'H-Br bond dissociation energy: 366 kJ/mol; rapid ionic dissociation in polar media',
+    catalyst: 'None required for acid-base dissociation; radical peroxide catalysts reverse Markovnikov addition',
     category: 'Strong Mineral Acid / Hydrogen Halide',
     common_reactions: [
       'H2 + Br2 -> 2HBr (Gas phase synthesis)',
@@ -234,6 +294,9 @@ export const KNOWN_COMPOUNDS = {
       'HBr(aq) + AgNO3(aq) -> AgBr(s) + HNO3(aq)'
     ],
     reaction_conditions: 'Stable anhydrous gas at room temperature; dissolves extremely exothermically in water up to 68.8% constant-boiling azeotrope',
+    hazards: 'Extremely corrosive (GHS Cat 1). Causes severe chemical burns, serious eye damage, and pulmonary edema upon inhalation.',
+    first_aid: 'Inhalation: Move to fresh air. Oxygen if breathing is difficult. Skin: Flush with copious water for 15+ min. Eyes: Flush with saline for 20 min holding eyelids open; seek urgent medical attention.',
+    precautions: 'Use strictly in certified fume hood. Wear chemical-resistant butyl gloves, safety goggles, and face shield.',
     safety_precautions: 'Extremely corrosive, causes severe chemical burns on contact, toxic upon inhalation, fumes heavily in humid air.',
     real_life_uses: [
       'Organic synthesis of alkyl bromides for pharmaceuticals',
@@ -249,7 +312,12 @@ export const KNOWN_COMPOUNDS = {
     structure: 'Bent molecular geometry with bond angle of 104.45° and O-H length of 95.84 pm',
     bonding: 'Polar covalent bonds with extensive tetrahedral intermolecular hydrogen-bonding network',
     molar_mass: 18.015,
-    phase: 'liquid',
+    color: 'Clear, colorless transparent liquid (pale blue in deep layers)',
+    phase: 'Liquid',
+    purity: '100% Deionized / Type I Ultrapure Reagent Water (resistivity > 18.2 MΩ·cm)',
+    required_temperature: 'Liquid range 0 °C to 100 °C (273 K to 373 K) at 1 atm',
+    kinetic_energy: 'O-H bond dissociation energy: 493 kJ/mol; thermal kinetic energy: 3/2 RT ≈ 3.7 kJ/mol at 298 K',
+    catalyst: 'None needed; acts as catalytic medium for ionic and enzymatic hydrolytic transformations',
     category: 'Universal Solvent / Inorganic Oxide',
     common_reactions: [
       '2H2O -> 2H2 + O2 (Electrolysis)',
@@ -261,6 +329,9 @@ export const KNOWN_COMPOUNDS = {
       'CaO(s) + H2O(l) -> Ca(OH)2(s)'
     ],
     reaction_conditions: 'Standard conditions (298.15 K, 1 atm); amphoteric substance acting as both Brønsted acid and base',
+    hazards: 'Non-toxic, essential for cellular life; thermal scalding burns when boiling.',
+    first_aid: 'Thermal Scalds: Immerse affected area in cold running water for 15 minutes. Protect blistered skin with sterile dressing.',
+    precautions: 'Use thermal protective gloves when handling steam or boiling water containers.',
     safety_precautions: 'Non-toxic, essential for cellular life; thermal scalding burns when boiling.',
     real_life_uses: [
       'Biological life medium and cellular hydration',
@@ -276,7 +347,12 @@ export const KNOWN_COMPOUNDS = {
     structure: 'Face-centered cubic (FCC) crystal lattice with 6:6 octahedral coordination of Na+ and Cl- ions',
     bonding: 'Classic ionic bonding between electropositive sodium cations and electronegative chloride anions',
     molar_mass: 58.443,
-    phase: 'solid',
+    color: 'White crystalline solid (colorless transparent single crystals)',
+    phase: 'Solid',
+    purity: '≥ 99.5% ACS Analytical Reagent Grade / USP Pharmaceutical Grade',
+    required_temperature: 'Thermally stable up to melting point 801 °C (1074 K)',
+    kinetic_energy: 'Lattice energy: 787 kJ/mol; dissolves rapidly in polar water via hydration enthalpy',
+    catalyst: 'None required; spontaneous dissolution in polar solvents',
     category: 'Inorganic Salt / Alkali Halide',
     common_reactions: [
       '2NaCl + 2H2O -> 2NaOH + Cl2 + H2 (Chlor-alkali electrolysis)',
@@ -287,6 +363,9 @@ export const KNOWN_COMPOUNDS = {
       'NaCl(s) + H2SO4(l) -> NaHSO4(s) + HCl(g)'
     ],
     reaction_conditions: 'Stable at ambient conditions; dissolves completely in polar solvents like water',
+    hazards: 'Low toxicity under standard use. Inhalation of fine dust causes mechanical respiratory irritation.',
+    first_aid: 'Eye Contact: Rinse thoroughly with clean water. Ingestion of massive quantities: Drink fresh water and seek medical evaluation.',
+    precautions: 'Store in dry sealed container to prevent hygroscopic clumping. Wear dust mask when handling bulk powders.',
     safety_precautions: 'Generally safe in culinary quantities; hygroscopic dust irritates ocular tissue.',
     real_life_uses: [
       'Food preservation, curing, and culinary seasoning',
@@ -302,7 +381,12 @@ export const KNOWN_COMPOUNDS = {
     structure: 'Linear centrosymmetric molecule with 180° bond angle and equal C=O bond lengths of 116.3 pm',
     bonding: 'Nonpolar molecule with two strongly polar covalent double bonds (C=O)',
     molar_mass: 44.010,
-    phase: 'gas',
+    color: 'Colorless gas / White opaque solid (Dry Ice)',
+    phase: 'Gas',
+    purity: '≥ 99.99% Food Grade / Supercritical Extraction Grade',
+    required_temperature: 'Gas at 25 °C; sublimes directly from solid to gas at -78.5 °C (194.7 K)',
+    kinetic_energy: 'C=O double bond energy: 799 kJ/mol; high thermodynamic stability',
+    catalyst: 'Carbonic anhydrase enzyme accelerates hydration by 10^6; Ru/Ni catalysts enable Sabatier methanation',
     category: 'Inorganic Carbon Oxide / Greenhouse Gas',
     common_reactions: [
       'CO2 + H2O <=> H2CO3',
@@ -314,6 +398,9 @@ export const KNOWN_COMPOUNDS = {
       'CH4(g) + 2O2(g) -> CO2(g) + 2H2O(g)'
     ],
     reaction_conditions: 'Gas at STP; sublimes directly to solid Dry Ice at -78.5°C without passing through liquid phase at 1 atm',
+    hazards: 'Simple asphyxiant at concentrations > 5%. Solid Dry Ice causes cryogenic frostbite necrosis upon contact.',
+    first_aid: 'Inhalation: Move exposed person to fresh air immediately. Administer CPR/oxygen if breathing ceases. Frostbite: Rewarm frozen tissue gently in lukewarm water (do not rub).',
+    precautions: 'Store Dry Ice in ventilated containers. Use cryogenic gloves when handling solid blocks. Ensure CO2 sensors in confined rooms.',
     safety_precautions: 'Simple asphyxiant at concentrations >5%; solid Dry Ice causes severe frostbite necrosis upon touch.',
     real_life_uses: [
       'Beverage carbonation and soda dispensing',
@@ -328,11 +415,15 @@ export const KNOWN_COMPOUNDS = {
 // ─── Local Chemistry Engine Simulation ──────────────────────────────────────
 export function simulateLocalReaction(formulas) {
   const normFormulas = formulas.map(f => f.toUpperCase().replace(/\s+/g, ''));
+  const chosenElements = extractElementsProfiles(formulas);
   
   for (const reaction of TEXTBOOK_REACTIONS) {
     const allMatch = reaction.keys.every(k => normFormulas.some(f => f.includes(k)));
     if (allMatch) {
-      return reaction;
+      return {
+        ...reaction,
+        chosen_elements: chosenElements
+      };
     }
   }
 
@@ -383,9 +474,19 @@ export function simulateLocalReaction(formulas) {
     energy_change: 'Exothermic; ΔH < 0 with thermodynamic lattice and bond enthalpy stabilization',
     molar_masses: totalMasses,
     reaction_conditions: 'Requires activation energy via thermal initiation, UV irradiation, or catalytic coordination under standard pressure',
-    observations: 'Elemental transformation occurs with observable color shift, phase alteration, heat liberation, and possible condensation or crystallization',
+    required_temperature: 'Ambient Standard Temperature (298 K / 25°C) to 373 K (100°C) thermal initiation',
+    kinetic_energy: 'Activation energy Ea ≈ 45 - 120 kJ/mol; molecular velocity governed by Maxwell-Boltzmann distribution',
+    catalyst: 'None strictly required for stoichiometric combination; transition metal catalysts (Pt, Pd, Ni) accelerate kinetics',
+    product_color: 'Crystalline off-white to metallic silver-gray',
+    product_phase: prodMass > 60 ? 'Solid' : 'Liquid/Gas',
+    purity: '98.5% - 99.8% High Purity Analytical / Technical Grade',
+    hazards: 'Potential exothermic heat release, local vessel pressurization, respiratory irritation, skin contact sensitization',
+    first_aid: 'Inhalation: Move victim to fresh air. Eye Contact: Flush cautiously with sterile saline or water for 15 min. Skin Contact: Wash thoroughly with mild soap and running water. Ingestion: Rinse oral cavity; do not induce vomiting; seek medical guidance.',
+    precautions: 'Wear nitrile lab gloves, chemical splash goggles, and flame-resistant lab coat. Conduct synthesis in certified fume hood with proper ventilation.',
     safety: 'Handle reagents with standard chemical hygiene protocol. Wear lab coat, chemical splash goggles, and nitrile gloves; conduct in a ventilated chemical fume hood.',
-    real_world_use: 'Stoichiometric compound synthesis, precursor preparation for materials science, chemical industry manufacturing, and molecular thermodynamics research.'
+    real_world_use: 'Stoichiometric compound synthesis, precursor preparation for materials science, chemical industry manufacturing, and molecular thermodynamics research.',
+    observations: 'Elemental transformation occurs with observable color shift, phase alteration, heat liberation, and possible condensation or crystallization',
+    chosen_elements: chosenElements
   };
 }
 
@@ -393,14 +494,22 @@ export function simulateLocalCompound(query) {
   const clean = query.trim().toUpperCase().replace(/[\s\-_]/g, '');
   
   if (KNOWN_COMPOUNDS[clean]) {
-    return KNOWN_COMPOUNDS[clean];
+    return {
+      ...KNOWN_COMPOUNDS[clean],
+      constituent_elements: extractElementsProfiles([KNOWN_COMPOUNDS[clean].formula])
+    };
   }
 
   for (const comp of Object.values(KNOWN_COMPOUNDS)) {
     if (comp.name.toUpperCase().includes(query.trim().toUpperCase()) || comp.formula.toUpperCase() === clean) {
-      return comp;
+      return {
+        ...comp,
+        constituent_elements: extractElementsProfiles([comp.formula])
+      };
     }
   }
+
+  const constituentElements = extractElementsProfiles([query.trim()]);
 
   let mass = 0;
   const regex = /([A-Z][a-z]?)([0-9]*)/g;
@@ -423,7 +532,12 @@ export function simulateLocalCompound(query) {
       structure: 'Stoichiometric molecular network derived from elemental valence configurations',
       bonding: 'Covalent / Polar lattice arrangement between constituent elements',
       molar_mass: parseFloat(mass.toFixed(3)),
-      phase: mass > 120 ? 'solid' : 'liquid/gas',
+      color: mass > 100 ? 'Off-white to silvery-crystalline solid' : 'Colorless substance',
+      phase: mass > 120 ? 'Solid' : 'Liquid/Gas',
+      purity: '≥ 99.0% Reagent Grade (ACS Standard)',
+      required_temperature: 'Thermally stable at ambient STP (298 K, 1 atm); decomposes above 300 °C',
+      kinetic_energy: 'Average molecular bond strength: 300 - 450 kJ/mol',
+      catalyst: 'Heterogeneous acid or transition metal surfaces accelerate synthesis pathways',
       category: 'Inorganic / Organic Chemical Substance',
       common_reactions: [
         `${query.trim()} + O2 -> Oxidized reaction products`,
@@ -433,13 +547,17 @@ export function simulateLocalCompound(query) {
         `Reactivity adheres strictly to stoichiometric mass conservation laws`
       ],
       reaction_conditions: 'Standard laboratory temperature and pressure (298 K, 1 atm) unless activated by heat or catalyst',
+      hazards: 'Standard laboratory chemical hazard. May cause respiratory, skin, or eye irritation upon direct exposure.',
+      first_aid: 'Inhalation: Move to fresh air. Skin: Wash thoroughly with soap and water. Eyes: Flush with saline solution for 15 min. Ingestion: Rinse mouth; do not induce vomiting.',
+      precautions: 'Wear chemical-resistant gloves, safety goggles, and work in a certified laboratory fume hood.',
       safety_precautions: 'Wear chemical-resistant gloves, safety goggles, and work in a certified laboratory fume hood.',
       real_life_uses: [
         'Chemical and biochemical research',
         'Analytical chemistry calibration standard',
         'Material precursor engineering'
       ],
-      properties: `Calculated Molar Mass: ${mass.toFixed(3)} g/mol. Elemental constituents verified.`
+      properties: `Calculated Molar Mass: ${mass.toFixed(3)} g/mol. Elemental constituents verified.`,
+      constituent_elements: constituentElements
     };
   }
 
@@ -449,23 +567,30 @@ export function simulateLocalCompound(query) {
     structure: 'Specific 3D crystalline or molecular configuration',
     bonding: 'Chemical bonds between constituent atoms',
     molar_mass: 0,
-    phase: 'unknown',
+    color: 'Undetermined crystalline / amorphous coloration',
+    phase: 'Solid/Liquid',
+    purity: 'Laboratory Reagent Grade (≥ 98.0%)',
+    required_temperature: 'Standard laboratory conditions (298 K, 1 atm)',
+    kinetic_energy: 'Standard thermodynamic thermal activation barrier',
+    catalyst: 'Reagent specific catalyst dependent on process',
     category: 'Chemical Substance',
     common_reactions: ['Oxidation / Reduction', 'Hydrolysis'],
     balanced_equations: ['Specific reactions vary with reagents'],
     reaction_conditions: 'Standard laboratory conditions',
+    hazards: 'Consult Material Safety Data Sheet (MSDS/SDS) for specific exposure thresholds.',
+    first_aid: 'General Protocol: Flush skin and eyes with clean running water for 15 minutes; seek medical care if irritation persists.',
+    precautions: 'Wear standard PPE: laboratory coat, safety glasses, and nitrile gloves.',
     safety_precautions: 'Consult Material Safety Data Sheet (MSDS/SDS)',
     real_life_uses: ['Research and laboratory exploration'],
-    properties: 'Chemical entity identified.'
+    properties: 'Chemical entity identified.',
+    constituent_elements: constituentElements
   };
 }
 
 // ─── AI Call with Model Fallback & Local Engine Fallback ─────────────────────
 const CANDIDATE_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  process.env.GEMINI_MODEL,
   'gemini-2.5-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-pro',
   'gemini-3.8-flash'
 ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
@@ -487,7 +612,11 @@ async function generateWithGemini(prompt, systemInstruction) {
         systemInstruction: systemInstruction || 'Return valid JSON only.',
       });
 
-      const result = await model.generateContent(prompt);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout after 4000ms for ${modelName}`)), 4000)
+      );
+
+      const result = await Promise.race([model.generateContent(prompt), timeoutPromise]);
       const text = result?.response?.text();
       if (!text) continue;
 
@@ -552,10 +681,34 @@ Enrich and return a valid JSON object with EXACTLY these fields:
   "reaction_type": "type of reaction",
   "molar_masses": {"compound formula": number},
   "reaction_conditions": "conditions needed",
+  "required_temperature": "temperature needed for reaction (e.g., 298 K / 25°C or 500°C)",
+  "kinetic_energy": "kinetic and activation energy details (e.g., Ea = 167 kJ/mol, collision frequency)",
+  "catalyst": "catalyst specification or 'None required' with explanation",
   "energy_change": "exothermic/endothermic and energy value when known",
-  "safety": "relevant safety information",
-  "real_world_use": "applications",
-  "observations": "visible changes during reaction"
+  "product_color": "color of the synthesized product(s)",
+  "product_phase": "physical phase/state of product(s) (solid/liquid/gas)",
+  "real_world_use": "industrial and scientific applications of product",
+  "purity": "typical purity grade / yield percentage",
+  "hazards": "detailed hazards of reactants and products (GHS classification, flammability, toxicity)",
+  "first_aid": "emergency first aid procedures for inhalation, skin/eye contact, ingestion",
+  "precautions": "safety precautions, required PPE, and handling guidelines",
+  "safety": "relevant safety protocol summary",
+  "observations": "visible changes during reaction",
+  "chosen_elements": [
+    {
+      "symbol": "element symbol",
+      "name": "element name",
+      "number": 1,
+      "color": "element color",
+      "phase": "element phase at STP",
+      "density": "density",
+      "melting_point": "melting point",
+      "boiling_point": "boiling point",
+      "electronegativity": "electronegativity",
+      "physical_properties": "melting/boiling point, density, appearance, conductivity",
+      "chemical_properties": "electronegativity, valence, bonding nature"
+    }
+  ]
 }`;
 
       try {
@@ -563,6 +716,30 @@ Enrich and return a valid JSON object with EXACTLY these fields:
           prompt,
           'You are ChemAI, an expert chemistry AI. Return only valid JSON conforming strictly to the requested schema. Ground your response in the verified reference data provided.'
         );
+
+        // Guarantee all requested user fields are thoroughly present
+        if (!aiResult.chosen_elements || !aiResult.chosen_elements.length) {
+          aiResult.chosen_elements = localResult.chosen_elements;
+        } else {
+          // Merge with authoritative local element properties if any property is missing
+          aiResult.chosen_elements = aiResult.chosen_elements.map(aiEl => {
+            const authoritative = localResult.chosen_elements?.find(le => le.symbol.toLowerCase() === aiEl.symbol?.toLowerCase());
+            return authoritative ? { ...authoritative, ...aiEl } : aiEl;
+          });
+        }
+
+        if (!aiResult.required_temperature) aiResult.required_temperature = localResult.required_temperature;
+        if (!aiResult.kinetic_energy) aiResult.kinetic_energy = localResult.kinetic_energy;
+        if (!aiResult.catalyst) aiResult.catalyst = localResult.catalyst;
+        if (!aiResult.purity) aiResult.purity = localResult.purity;
+        if (!aiResult.hazards) aiResult.hazards = localResult.hazards;
+        if (!aiResult.first_aid) aiResult.first_aid = localResult.first_aid;
+        if (!aiResult.precautions) aiResult.precautions = localResult.precautions;
+        if (!aiResult.product_color) aiResult.product_color = localResult.product_color;
+        if (!aiResult.product_phase) aiResult.product_phase = localResult.product_phase;
+        if (!aiResult.real_world_use) aiResult.real_world_use = localResult.real_world_use;
+        if (!aiResult.safety) aiResult.safety = localResult.safety;
+
         return res.json(aiResult);
       } catch (aiErr) {
         console.warn('AI unavailable, falling back to local chemistry engine:', aiErr.message);
@@ -588,14 +765,37 @@ Enrich and return a valid JSON object with EXACTLY these fields:
   "structure": "molecular structure description",
   "bonding": "type of bonding",
   "molar_mass": number,
+  "color": "color of the compound",
   "phase": "solid/liquid/gas",
   "category": "compound category",
+  "purity": "typical purity grade / specification",
+  "required_temperature": "thermal stability or synthesis temperature",
+  "kinetic_energy": "bond energy / thermodynamic kinetic requirement",
+  "catalyst": "catalyst involved in synthesis or decomposition",
   "common_reactions": ["reaction1", "reaction2"],
   "balanced_equations": ["equation1", "equation2"],
   "reaction_conditions": "conditions",
-  "safety_precautions": "safety information",
+  "hazards": "specific chemical hazards (GHS)",
+  "first_aid": "emergency first aid procedures (inhalation, skin, eye, ingestion)",
+  "precautions": "safe handling precautions and required PPE",
+  "safety_precautions": "safety information summary",
   "real_life_uses": ["use1", "use2"],
-  "properties": "physical and chemical properties"
+  "properties": "physical and chemical properties",
+  "constituent_elements": [
+    {
+      "symbol": "element symbol",
+      "name": "element name",
+      "number": 1,
+      "color": "element color",
+      "phase": "element phase at STP",
+      "density": "density",
+      "melting_point": "melting point",
+      "boiling_point": "boiling point",
+      "electronegativity": "electronegativity",
+      "physical_properties": "physical description",
+      "chemical_properties": "chemical behavior"
+    }
+  ]
 }`;
 
       try {
@@ -603,6 +803,19 @@ Enrich and return a valid JSON object with EXACTLY these fields:
           prompt,
           'You are ChemAI, an expert chemistry AI. Return only valid JSON conforming strictly to the requested schema. Ground your response in the verified reference data provided.'
         );
+
+        if (!aiResult.constituent_elements || !aiResult.constituent_elements.length) {
+          aiResult.constituent_elements = localResult.constituent_elements;
+        }
+        if (!aiResult.color) aiResult.color = localResult.color;
+        if (!aiResult.purity) aiResult.purity = localResult.purity;
+        if (!aiResult.required_temperature) aiResult.required_temperature = localResult.required_temperature;
+        if (!aiResult.kinetic_energy) aiResult.kinetic_energy = localResult.kinetic_energy;
+        if (!aiResult.catalyst) aiResult.catalyst = localResult.catalyst;
+        if (!aiResult.hazards) aiResult.hazards = localResult.hazards;
+        if (!aiResult.first_aid) aiResult.first_aid = localResult.first_aid;
+        if (!aiResult.precautions) aiResult.precautions = localResult.precautions;
+
         return res.json(aiResult);
       } catch (aiErr) {
         console.warn('AI unavailable, falling back to local chemistry engine:', aiErr.message);
