@@ -19,11 +19,18 @@ import {
 import { PERIODIC_ELEMENTS, ELECTRON_SHELLS } from './periodicData';
 
 const requestAnalysis = async (payload) => {
-  const response = await fetch('/api/analyze', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  let response;
+  try {
+    response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (networkErr) {
+    throw new Error(
+      'Cannot reach the analysis server. Make sure the backend is running (npm run dev) and try again.'
+    );
+  }
 
   const text = await response.text();
 
@@ -35,7 +42,10 @@ const requestAnalysis = async (payload) => {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error || 'The analysis request failed.');
+    throw new Error(
+      data?.error ||
+        `The analysis request failed with status ${response.status}. Please try again.`
+    );
   }
 
   if (!data) {
