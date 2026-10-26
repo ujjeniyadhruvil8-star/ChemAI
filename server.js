@@ -491,8 +491,26 @@ async function generateWithGemini(prompt, systemInstruction) {
       const text = result?.response?.text();
       if (!text) continue;
 
-      const cleaned = text.replace(/^```(?:json)?\s*|\s*```$/g, '').trim();
-      return JSON.parse(cleaned);
+      // Strip markdown fences and control characters
+      let cleaned = text
+        .replace(/^```(?:json)?\s*/gm, '')
+        .replace(/\s*```\s*$/gm, '')
+        .trim();
+
+      // Remove non-printable control characters (except normal whitespace)
+      // eslint-disable-next-line no-control-regex
+      cleaned = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+      try {
+        return JSON.parse(cleaned);
+      } catch (parseErr) {
+        // Aggressive fallback: extract first {...} block
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        throw parseErr;
+      }
     } catch (err) {
       console.warn(`Model ${modelName} call failed:`, err?.message || err);
       lastError = err;
